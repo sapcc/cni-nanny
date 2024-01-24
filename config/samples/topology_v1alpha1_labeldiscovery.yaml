@@ -1,0 +1,12 @@
+apiVersion: topology.cninanny.sap.cc/v1alpha1
+kind: LabelDiscovery
+metadata:
+  labels:
+    app.kubernetes.io/name: labeldiscovery
+    app.kubernetes.io/instance: labeldiscovery-sample
+    app.kubernetes.io/part-of: cni-nanny
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: cni-nanny
+  name: labeldiscovery-sample
+spec:
+  # TODO(user): Add fields here

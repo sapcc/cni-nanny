@@ -1,0 +1,27 @@
+# permissions for end users to view labeldiscoveries.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: labeldiscovery-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: cni-nanny
+    app.kubernetes.io/part-of: cni-nanny
+    app.kubernetes.io/managed-by: kustomize
+  name: labeldiscovery-viewer-role
+rules:
+- apiGroups:
+  - topology.cninanny.sap.cc
+  resources:
+  - labeldiscoveries
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - topology.cninanny.sap.cc
+  resources:
+  - labeldiscoveries/status
+  verbs:
+  - get

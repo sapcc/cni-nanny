@@ -1,0 +1,5 @@
+## Append samples of your project ##
+resources:
+- bgp_v1alpha1_bgppeerdiscovery.yaml
+- topology_v1alpha1_labeldiscovery.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples

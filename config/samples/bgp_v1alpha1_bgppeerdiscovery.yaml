@@ -1,0 +1,12 @@
+apiVersion: bgp.cninanny.sap.cc/v1alpha1
+kind: BgpPeerDiscovery
+metadata:
+  labels:
+    app.kubernetes.io/name: bgppeerdiscovery
+    app.kubernetes.io/instance: bgppeerdiscovery-sample
+    app.kubernetes.io/part-of: cni-nanny
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: cni-nanny
+  name: bgppeerdiscovery-sample
+spec:
+  # TODO(user): Add fields here

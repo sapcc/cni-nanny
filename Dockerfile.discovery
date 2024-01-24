@@ -1,0 +1,20 @@
+# builder
+FROM golang:1.21 as builder
+
+WORKDIR /src/
+
+COPY go.mod go.sum ./
+COPY . ./
+
+RUN CGO_ENABLED=0 \
+    GOOS=linux \
+    go build -o discovery cmd/discovery/discovery.go
+
+# runner
+FROM alpine:latest
+LABEL source_repository="https://github.com/sapcc/cni-nanny"
+
+WORKDIR /
+
+COPY --from=builder /src/discovery /discovery
+ENTRYPOINT ["/discovery"]
