@@ -18,9 +18,12 @@ package main
 
 import (
 	"flag"
+	"os"
+
+	v3 "github.com/projectcalico/api/pkg/apis/projectcalico/v3"
 	"github.com/sapcc/cni-nanny/internal/config"
 	bgpcontroller "github.com/sapcc/cni-nanny/internal/controller/bgp"
-	"os"
+	"github.com/sapcc/cni-nanny/internal/controller/calico"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -50,6 +53,7 @@ func init() {
 
 	utilruntime.Must(bgpv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(topologyv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(v3.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -57,6 +61,7 @@ func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
+	var requeueInterval int
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.StringVar(&config.Cfg.DefaultName, "default-name", "default", "The default resource name.")
@@ -64,6 +69,8 @@ func main() {
 	flag.StringVar(&config.Cfg.NodeTopologyLabel, "node-topology-label", "topology.kubernetes.io/zone", "The node topology label to handle peer discovery.")
 	flag.StringVar(&config.Cfg.JobImageName, "job-image-name", "cni-nanny-discovery", "The name of bgp peer discovery image.")
 	flag.StringVar(&config.Cfg.JobImageTag, "job-image-tag", "latest", "The tag of bgp peer discovery image.")
+	flag.IntVar(&config.Cfg.BgpRemoteAs, "bgp-remote-as", 65154, "The remote autonomous system of bgp peers.")
+	flag.IntVar(&requeueInterval, "requeue-interval", 5, "requeue interval in minutes")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -109,6 +116,16 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "BgpPeerDiscovery")
 		os.Exit(1)
 	}
+	if err = (&calico.CalicoBgpReconciler{
+		Client:            mgr.GetClient(),
+		Scheme:            mgr.GetScheme(),
+		DefaultName:       config.Cfg.DefaultName,
+		Namespace:         config.Cfg.Namespace,
+		NodeTopologyLabel: config.Cfg.NodeTopologyLabel,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "CalicoBgp")
+		os.Exit(1)
+	}
 
 	if err = (&topologycontroller.LabelDiscoveryReconciler{
 		Client:            mgr.GetClient(),
@@ -120,6 +137,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "LabelDiscovery")
 		os.Exit(1)
 	}
+
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

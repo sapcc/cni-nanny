@@ -19,6 +19,7 @@ package topology
 import (
 	"context"
 	topologyv1alpha1 "github.com/sapcc/cni-nanny/api/topology/v1alpha1"
+	"github.com/sapcc/cni-nanny/internal/config"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -62,7 +63,6 @@ func (r *LabelDiscoveryReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	if err != nil {
 		if errors.IsNotFound(err) {
 			labelDisc, err := generateLabelDiscovery(nsName, r.NodeTopologyLabel, labelDiscovery)
-			log.FromContext(ctx).Info("here", "name", req.Name)
 			if err != nil {
 				log.FromContext(ctx).Error(err, "error generating labelDiscovery")
 				return ctrl.Result{}, err
@@ -71,10 +71,11 @@ func (r *LabelDiscoveryReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 			if err != nil {
 				log.FromContext(ctx).Error(err, "error creating labelDiscovery")
 				return ctrl.Result{}, err
+			} else {
+				log.FromContext(ctx).Error(err, "error getting labelDiscovery")
+				return ctrl.Result{}, err
 			}
 		}
-		log.FromContext(ctx).Error(err, "error getting labelDiscovery")
-		return ctrl.Result{}, err
 	}
 	node := &corev1.Node{}
 	err = r.Get(ctx, req.NamespacedName, node)
@@ -113,8 +114,9 @@ func generateLabelDiscovery(nsName types.NamespacedName, label string, labelDisc
 	labelDiscovery.Name = nsName.Name
 	labelDiscovery.Namespace = nsName.Namespace
 	labelDiscovery.Status.DiscoveredTopologyValues = make(map[string]topologyv1alpha1.DiscoveredTopologyValue)
-	//labeldisc.ObjectMeta.Labels = map[string]string{}
-	//labeldisc.ObjectMeta.Labels[] =
+	labelDiscovery.ObjectMeta.Labels = map[string]string{}
+	labelDiscovery.ObjectMeta.Labels[config.KubeLabelComponent] = "LabelDiscovery"
+	labelDiscovery.ObjectMeta.Labels[config.KubeLabelManaged] = config.KubeApp
 	return *labelDiscovery, nil
 }
 

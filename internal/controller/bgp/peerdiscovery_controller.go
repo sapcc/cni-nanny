@@ -58,27 +58,25 @@ func (r *TracerouteDiscoveryReconciler) Reconcile(ctx context.Context, req ctrl.
 		err := r.Get(ctx, nsName, bgpPeerDiscovery)
 		if err != nil {
 			if errors.IsNotFound(err) {
-				labelDisc, err := generateBgpPeerDiscovery(nsName, bgpPeerDiscovery)
-				log.FromContext(ctx).Info("here", "name", req.Name)
+				bgpPeerDisc, err := generateBgpPeerDiscovery(nsName, bgpPeerDiscovery)
 				if err != nil {
 					log.FromContext(ctx).Error(err, "error generating bgpPeerDiscovery")
 					return ctrl.Result{}, err
 				}
-				err = r.Create(ctx, &labelDisc)
+				err = r.Create(ctx, &bgpPeerDisc)
 				if err != nil {
 					log.FromContext(ctx).Error(err, "error creating bgpPeerDiscovery")
 					return ctrl.Result{}, err
 				}
+			} else {
+				log.FromContext(ctx).Error(err, "error getting bgpPeerDiscovery")
+				return ctrl.Result{}, err
 			}
-			log.FromContext(ctx).Error(err, "error getting bgpPeerDiscovery")
-			return ctrl.Result{}, err
 		}
-		if bgpPeerDiscovery.Status.DiscoveredPeers == nil {
-			patch := client.MergeFrom(bgpPeerDiscovery.DeepCopy())
-			err := r.updateStatus(ctx, peerList, patch, bgpPeerDiscovery)
-			if err != nil {
-				log.FromContext(ctx).Error(err, "error updating bgpPeerDiscovery status")
-			}
+		patch := client.MergeFrom(bgpPeerDiscovery.DeepCopy())
+		err = r.updateStatus(ctx, peerList, patch, bgpPeerDiscovery)
+		if err != nil {
+			log.FromContext(ctx).Error(err, "error updating bgpPeerDiscovery status")
 		}
 	}
 
@@ -97,9 +95,9 @@ func (r *TracerouteDiscoveryReconciler) SetupWithManager(mgr ctrl.Manager) error
 func generateBgpPeerDiscovery(nsName types.NamespacedName, bgpPeerDiscovery *bgpv1alpha1.BgpPeerDiscovery) (bgpv1alpha1.BgpPeerDiscovery, error) {
 	bgpPeerDiscovery.Name = nsName.Name
 	bgpPeerDiscovery.Namespace = nsName.Namespace
-	//bgpPeerDiscovery.Status = make
-	//labeldisc.ObjectMeta.Labels = map[string]string{}
-	//labeldisc.ObjectMeta.Labels[] =
+	bgpPeerDiscovery.ObjectMeta.Labels = map[string]string{}
+	bgpPeerDiscovery.ObjectMeta.Labels[config.KubeLabelComponent] = "BgpPeerDiscovery"
+	bgpPeerDiscovery.ObjectMeta.Labels[config.KubeLabelManaged] = config.KubeApp
 	return *bgpPeerDiscovery, nil
 }
 

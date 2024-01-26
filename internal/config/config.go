@@ -2,6 +2,12 @@ package config
 
 import "net"
 
+const (
+	KubeApp            = "cni-nanny"
+	KubeLabelComponent = "app.kubernetes.io/component"
+	KubeLabelManaged   = "app.kubernetes.io/managed-by"
+)
+
 var Cfg = Config{}
 
 type Config struct {
@@ -14,4 +20,5 @@ type Config struct {
 	JobImageName      string
 	JobImageTag       string
 	BgpNeighborCount  int
+	BgpRemoteAs       int
 }

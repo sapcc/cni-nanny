@@ -22,7 +22,9 @@ import (
 	"github.com/sapcc/cni-nanny/internal/config"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -33,11 +35,12 @@ import (
 // BgpPeerDiscoveryReconciler reconciles a BgpPeerDiscovery object
 type BgpPeerDiscoveryReconciler struct {
 	client.Client
-	Scheme       *runtime.Scheme
-	DefaultName  string
-	Namespace    string
-	JobImageName string
-	JobImageTag  string
+	Scheme          *runtime.Scheme
+	DefaultName     string
+	Namespace       string
+	JobImageName    string
+	JobImageTag     string
+	RequeueInterval time.Duration
 }
 
 //+kubebuilder:rbac:groups=bgp.cninanny.sap.cc,resources=bgppeerdiscoveries,verbs=get;list;watch;create;update;patch;delete
@@ -63,17 +66,25 @@ func (r *BgpPeerDiscoveryReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 	for k, v := range labelDiscovery.Status.DiscoveredTopologyValues {
 		if !v.Finalized {
-			conf := config.Config{
-				Namespace:         req.Namespace,
-				JobImageName:      r.JobImageName,
-				JobImageTag:       r.JobImageTag,
-				NodeTopologyLabel: labelDiscovery.Spec.TopologyLabel,
-				NodeTopologyValue: k,
-			}
-			err = r.createDiscoveryJob(ctx, conf)
+			// check if discovery is already running
+			found, err := r.checkJobsForTopologyValue(ctx, k)
 			if err != nil {
-				log.FromContext(ctx).Error(err, "error creating job")
+				log.FromContext(ctx).Error(err, "error checking discovery jobs")
 				return ctrl.Result{}, err
+			}
+			if !found {
+				conf := config.Config{
+					Namespace:         req.Namespace,
+					JobImageName:      r.JobImageName,
+					JobImageTag:       r.JobImageTag,
+					NodeTopologyLabel: labelDiscovery.Spec.TopologyLabel,
+					NodeTopologyValue: k,
+				}
+				err = r.createDiscoveryJob(ctx, conf)
+				if err != nil {
+					log.FromContext(ctx).Error(err, "error creating job")
+					return ctrl.Result{}, err
+				}
 			}
 		}
 	}
@@ -88,13 +99,37 @@ func (r *BgpPeerDiscoveryReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+func (r BgpPeerDiscoveryReconciler) checkJobsForTopologyValue(ctx context.Context, value string) (bool, error) {
+	labelSelector, err := labels.ValidatedSelectorFromSet(map[string]string{topologyv1alpha1.TopologyValue: value})
+	if err != nil {
+		log.FromContext(ctx).Error(err, "error building label selector")
+		return false, err
+	}
+	listOption := client.ListOptions{LabelSelector: labelSelector}
+	jobList := batchv1.JobList{}
+	err = r.List(ctx, &jobList, &listOption)
+	if err != nil {
+		log.FromContext(ctx).Error(err, "error getting jobs")
+		return false, err
+	}
+	if len(jobList.Items) == 0 {
+		log.FromContext(ctx).Info("no jobs found")
+		return false, nil
+	}
+	return true, nil
+}
+
 func (r BgpPeerDiscoveryReconciler) createDiscoveryJob(ctx context.Context, conf config.Config) error {
 	job := batchv1.Job{Spec: batchv1.JobSpec{}}
+	labels := map[string]string{}
+	labels[config.KubeLabelComponent] = "DiscoveryJob"
+	labels[config.KubeLabelManaged] = config.KubeApp
+	labels[topologyv1alpha1.TopologyValue] = conf.NodeTopologyValue
 	job.Name = "bgp-peer-discovery" + "-" + conf.NodeTopologyValue
 	job.Namespace = conf.Namespace
+	job.ObjectMeta.Labels = labels
 
 	timeToLive := int32(60)
-
 	sel := make(map[string]string)
 	sel[conf.NodeTopologyLabel] = conf.NodeTopologyValue
 
@@ -102,8 +137,15 @@ func (r BgpPeerDiscoveryReconciler) createDiscoveryJob(ctx context.Context, conf
 
 	job.Spec.Template = corev1.PodTemplateSpec{}
 	job.Spec.Template.Spec = corev1.PodSpec{}
+	job.Spec.Template.Labels = labels
 	job.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicyNever
 	job.Spec.Template.Spec.NodeSelector = sel
+	job.Spec.Template.Spec.HostNetwork = true
+	job.Spec.Template.Spec.Tolerations = []corev1.Toleration{
+		{
+			Operator: corev1.TolerationOpExists,
+		},
+	}
 	container := corev1.Container{
 		Image: conf.JobImageName + ":" + conf.JobImageTag,
 		Name:  "discover",
