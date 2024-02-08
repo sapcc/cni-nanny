@@ -19,11 +19,9 @@ package calico
 import (
 	"context"
 	"fmt"
+
 	v3 "github.com/projectcalico/api/pkg/apis/projectcalico/v3"
 	"github.com/projectcalico/api/pkg/lib/numorstring"
-	bgpv1alpha1 "github.com/sapcc/cni-nanny/api/bgp/v1alpha1"
-	topologyv1alpha1 "github.com/sapcc/cni-nanny/api/topology/v1alpha1"
-	"github.com/sapcc/cni-nanny/internal/config"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -31,6 +29,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	bgpv1alpha1 "github.com/sapcc/cni-nanny/api/bgp/v1alpha1"
+	topologyv1alpha1 "github.com/sapcc/cni-nanny/api/topology/v1alpha1"
+	"github.com/sapcc/cni-nanny/internal/config"
 )
 
 // CalicoBgpReconciler reconciles a BgpPeerDiscovery object
@@ -83,11 +85,8 @@ func (r *CalicoBgpReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			err := r.Get(ctx, nsName, &calicoBgpPeer)
 			if err != nil {
 				if errors.IsNotFound(err) {
-					calicoPeer, err := generateCalicoBgpPeer(nsName, spec, &calicoBgpPeer)
-					if err != nil {
-						log.FromContext(ctx).Error(err, "error generating calicoBgpPeer")
-						return ctrl.Result{}, err
-					}
+					calicoPeer := generateCalicoBgpPeer(nsName, spec, &calicoBgpPeer)
+
 					err = r.Create(ctx, calicoPeer)
 					if err != nil {
 						log.FromContext(ctx).Error(err, "error creating calicoBgpPeer")
@@ -128,7 +127,6 @@ func (r *CalicoBgpReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		if err != nil {
 			log.FromContext(ctx).Error(err, "could not patch labelDiscovery")
 		}
-
 	}
 	return ctrl.Result{}, nil
 }
@@ -141,12 +139,12 @@ func (r *CalicoBgpReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func generateCalicoBgpPeer(nsName types.NamespacedName, spec v3.BGPPeerSpec, calicoBgpPeer *v3.BGPPeer) (*v3.BGPPeer, error) {
+func generateCalicoBgpPeer(nsName types.NamespacedName, spec v3.BGPPeerSpec, calicoBgpPeer *v3.BGPPeer) *v3.BGPPeer {
 	calicoBgpPeer.Name = nsName.Name
 	calicoBgpPeer.Namespace = nsName.Namespace
 	calicoBgpPeer.Spec = spec
 	calicoBgpPeer.ObjectMeta.Labels = map[string]string{}
 	calicoBgpPeer.ObjectMeta.Labels[config.KubeLabelComponent] = "BgpPeer"
 	calicoBgpPeer.ObjectMeta.Labels[config.KubeLabelManaged] = config.KubeApp
-	return calicoBgpPeer, nil
+	return calicoBgpPeer
 }

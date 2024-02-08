@@ -18,13 +18,15 @@ package bgp
 
 import (
 	"context"
-	topologyv1alpha1 "github.com/sapcc/cni-nanny/api/topology/v1alpha1"
-	"github.com/sapcc/cni-nanny/internal/config"
+	"time"
+
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"time"
+
+	topologyv1alpha1 "github.com/sapcc/cni-nanny/api/topology/v1alpha1"
+	"github.com/sapcc/cni-nanny/internal/config"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -121,13 +123,13 @@ func (r BgpPeerDiscoveryReconciler) checkJobsForTopologyValue(ctx context.Contex
 
 func (r BgpPeerDiscoveryReconciler) createDiscoveryJob(ctx context.Context, conf config.Config) error {
 	job := batchv1.Job{Spec: batchv1.JobSpec{}}
-	labels := map[string]string{}
-	labels[config.KubeLabelComponent] = "DiscoveryJob"
-	labels[config.KubeLabelManaged] = config.KubeApp
-	labels[topologyv1alpha1.TopologyValue] = conf.NodeTopologyValue
+	lab := map[string]string{}
+	lab[config.KubeLabelComponent] = "DiscoveryJob"
+	lab[config.KubeLabelManaged] = config.KubeApp
+	lab[topologyv1alpha1.TopologyValue] = conf.NodeTopologyValue
 	job.Name = "bgp-peer-discovery" + "-" + conf.NodeTopologyValue
 	job.Namespace = conf.Namespace
-	job.ObjectMeta.Labels = labels
+	job.ObjectMeta.Labels = lab
 
 	timeToLive := int32(60)
 	sel := make(map[string]string)
@@ -137,7 +139,7 @@ func (r BgpPeerDiscoveryReconciler) createDiscoveryJob(ctx context.Context, conf
 
 	job.Spec.Template = corev1.PodTemplateSpec{}
 	job.Spec.Template.Spec = corev1.PodSpec{}
-	job.Spec.Template.Labels = labels
+	job.Spec.Template.Labels = lab
 	job.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicyNever
 	job.Spec.Template.Spec.NodeSelector = sel
 	job.Spec.Template.Spec.HostNetwork = true

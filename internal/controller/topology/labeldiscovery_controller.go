@@ -18,8 +18,7 @@ package topology
 
 import (
 	"context"
-	topologyv1alpha1 "github.com/sapcc/cni-nanny/api/topology/v1alpha1"
-	"github.com/sapcc/cni-nanny/internal/config"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,6 +27,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	topologyv1alpha1 "github.com/sapcc/cni-nanny/api/topology/v1alpha1"
+	"github.com/sapcc/cni-nanny/internal/config"
 )
 
 // LabelDiscoveryReconciler reconciles a LabelDiscovery object
@@ -62,11 +64,7 @@ func (r *LabelDiscoveryReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	err := r.Get(ctx, nsName, labelDiscovery)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			labelDisc, err := generateLabelDiscovery(nsName, r.NodeTopologyLabel, labelDiscovery)
-			if err != nil {
-				log.FromContext(ctx).Error(err, "error generating labelDiscovery")
-				return ctrl.Result{}, err
-			}
+			labelDisc := generateLabelDiscovery(nsName, r.NodeTopologyLabel, labelDiscovery)
 			err = r.Create(ctx, &labelDisc)
 			if err != nil {
 				log.FromContext(ctx).Error(err, "error creating labelDiscovery")
@@ -106,7 +104,7 @@ func (r *LabelDiscoveryReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func generateLabelDiscovery(nsName types.NamespacedName, label string, labelDiscovery *topologyv1alpha1.LabelDiscovery) (topologyv1alpha1.LabelDiscovery, error) {
+func generateLabelDiscovery(nsName types.NamespacedName, label string, labelDiscovery *topologyv1alpha1.LabelDiscovery) topologyv1alpha1.LabelDiscovery {
 	spec := topologyv1alpha1.LabelDiscoverySpec{
 		TopologyLabel: label,
 	}
@@ -117,7 +115,7 @@ func generateLabelDiscovery(nsName types.NamespacedName, label string, labelDisc
 	labelDiscovery.ObjectMeta.Labels = map[string]string{}
 	labelDiscovery.ObjectMeta.Labels[config.KubeLabelComponent] = "LabelDiscovery"
 	labelDiscovery.ObjectMeta.Labels[config.KubeLabelManaged] = config.KubeApp
-	return *labelDiscovery, nil
+	return *labelDiscovery
 }
 
 func (r *LabelDiscoveryReconciler) appendStatus(ctx context.Context, name string, label *topologyv1alpha1.DiscoveredTopologyValue, patch client.Patch, labelDiscovery *topologyv1alpha1.LabelDiscovery) error {

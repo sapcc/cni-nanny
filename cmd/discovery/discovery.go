@@ -16,18 +16,20 @@ package main
 
 import (
 	"flag"
-	bgpv1alpha1 "github.com/sapcc/cni-nanny/api/bgp/v1alpha1"
-	topologyv1alpha1 "github.com/sapcc/cni-nanny/api/topology/v1alpha1"
-	"github.com/sapcc/cni-nanny/internal/config"
-	"github.com/sapcc/cni-nanny/internal/controller/bgp"
+	"os"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
+
+	bgpv1alpha1 "github.com/sapcc/cni-nanny/api/bgp/v1alpha1"
+	topologyv1alpha1 "github.com/sapcc/cni-nanny/api/topology/v1alpha1"
+	"github.com/sapcc/cni-nanny/internal/config"
+	"github.com/sapcc/cni-nanny/internal/controller/bgp"
 )
 
 var (

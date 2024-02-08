@@ -16,17 +16,19 @@ package bgp
 
 import (
 	"context"
+	"os"
+
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log"
+
 	bgpv1alpha1 "github.com/sapcc/cni-nanny/api/bgp/v1alpha1"
 	topologyv1alpha1 "github.com/sapcc/cni-nanny/api/topology/v1alpha1"
 	"github.com/sapcc/cni-nanny/internal/config"
 	"github.com/sapcc/cni-nanny/internal/discovery"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
-	"os"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type TracerouteDiscoveryReconciler struct {
@@ -72,11 +74,8 @@ func (r *TracerouteDiscoveryReconciler) Reconcile(ctx context.Context, req ctrl.
 		err := r.Get(ctx, nsName, bgpPeerDiscovery)
 		if err != nil {
 			if errors.IsNotFound(err) {
-				bgpPeerDisc, err := generateBgpPeerDiscovery(nsName, bgpPeerDiscovery)
-				if err != nil {
-					log.FromContext(ctx).Error(err, "error generating bgpPeerDiscovery")
-					return ctrl.Result{}, err
-				}
+				bgpPeerDisc := generateBgpPeerDiscovery(nsName, bgpPeerDiscovery)
+
 				err = r.Create(ctx, &bgpPeerDisc)
 				if err != nil {
 					log.FromContext(ctx).Error(err, "error creating bgpPeerDiscovery")
@@ -106,13 +105,13 @@ func (r *TracerouteDiscoveryReconciler) SetupWithManager(mgr ctrl.Manager) error
 		Complete(r)
 }
 
-func generateBgpPeerDiscovery(nsName types.NamespacedName, bgpPeerDiscovery *bgpv1alpha1.BgpPeerDiscovery) (bgpv1alpha1.BgpPeerDiscovery, error) {
+func generateBgpPeerDiscovery(nsName types.NamespacedName, bgpPeerDiscovery *bgpv1alpha1.BgpPeerDiscovery) bgpv1alpha1.BgpPeerDiscovery {
 	bgpPeerDiscovery.Name = nsName.Name
 	bgpPeerDiscovery.Namespace = nsName.Namespace
 	bgpPeerDiscovery.ObjectMeta.Labels = map[string]string{}
 	bgpPeerDiscovery.ObjectMeta.Labels[config.KubeLabelComponent] = "BgpPeerDiscovery"
 	bgpPeerDiscovery.ObjectMeta.Labels[config.KubeLabelManaged] = config.KubeApp
-	return *bgpPeerDiscovery, nil
+	return *bgpPeerDiscovery
 }
 
 func (r *TracerouteDiscoveryReconciler) updateStatus(ctx context.Context, peers []string, patch client.Patch, bgpPeerDiscovery *bgpv1alpha1.BgpPeerDiscovery) error {

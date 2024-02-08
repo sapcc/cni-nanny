@@ -17,9 +17,10 @@ package discovery
 import (
 	"context"
 	"fmt"
-	"github.com/sapcc/go-traceroute/traceroute"
 	"net"
 	"time"
+
+	"github.com/sapcc/go-traceroute/traceroute"
 )
 
 // GetNeighbors discovers next-hops by sending traceroute packets with ttl=1
@@ -47,7 +48,7 @@ func GetNeighbors(count int) ([]*net.IP, error) {
 	}
 
 	var neigh []*net.IP
-	for k, _ := range h {
+	for k := range h {
 		ip := net.ParseIP(k)
 		neigh = append(neigh, &ip)
 	}

@@ -23,6 +23,7 @@ import (
 	"github.com/sapcc/cni-nanny/internal/controller/calico"
 
 	v3 "github.com/projectcalico/api/pkg/apis/projectcalico/v3"
+
 	"github.com/sapcc/cni-nanny/internal/config"
 	bgpcontroller "github.com/sapcc/cni-nanny/internal/controller/bgp"
 
