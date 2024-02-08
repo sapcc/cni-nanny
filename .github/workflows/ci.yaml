@@ -47,11 +47,11 @@ jobs:
           check-latest: true
           go-version: "1.21"
       - name: Run tests and generate coverage report
-        run: make build/cover.out
+        run: make bin/cover.out
       - name: Upload coverage report to Coveralls
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_BRANCH: ${{ github.head_ref }}
         run: |
           go install github.com/mattn/goveralls@latest
-          goveralls -service=github -coverprofile=build/cover.out
+          goveralls -service=github -coverprofile=bin/cover.out
