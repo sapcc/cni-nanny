@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"os"
+	"time"
 
 	"github.com/sapcc/cni-nanny/internal/controller/calico"
 
@@ -73,7 +74,7 @@ func main() {
 	flag.StringVar(&config.Cfg.JobImageTag, "job-image-tag", "latest", "The tag of bgp peer discovery image.")
 	flag.StringVar(&config.Cfg.ServiceAccount, "service-account-name", "cni-nanny-controller-manager", "The name of service account for bgp peer discovery.")
 	flag.IntVar(&config.Cfg.BgpRemoteAs, "bgp-remote-as", 12345, "The remote autonomous system of bgp peers.")
-	flag.IntVar(&requeueInterval, "requeue-interval", 5, "requeue interval in minutes")
+	flag.IntVar(&requeueInterval, "requeue-interval", 10, "requeue interval in minutes")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -109,13 +110,14 @@ func main() {
 	}
 
 	if err = (&bgpcontroller.BgpPeerDiscoveryReconciler{
-		Client:         mgr.GetClient(),
-		Scheme:         mgr.GetScheme(),
-		DefaultName:    config.Cfg.DefaultName,
-		Namespace:      config.Cfg.Namespace,
-		JobImageName:   config.Cfg.JobImageName,
-		JobImageTag:    config.Cfg.JobImageTag,
-		ServiceAccount: config.Cfg.ServiceAccount,
+		Client:          mgr.GetClient(),
+		Scheme:          mgr.GetScheme(),
+		DefaultName:     config.Cfg.DefaultName,
+		Namespace:       config.Cfg.Namespace,
+		JobImageName:    config.Cfg.JobImageName,
+		JobImageTag:     config.Cfg.JobImageTag,
+		ServiceAccount:  config.Cfg.ServiceAccount,
+		RequeueInterval: time.Duration(requeueInterval) * time.Minute,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "BgpPeerDiscovery")
 		os.Exit(1)

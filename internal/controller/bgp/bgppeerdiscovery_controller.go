@@ -83,6 +83,7 @@ func (r *BgpPeerDiscoveryReconciler) Reconcile(ctx context.Context, req ctrl.Req
 					JobImageTag:       r.JobImageTag,
 					NodeTopologyLabel: labelDiscovery.Spec.TopologyLabel,
 					NodeTopologyValue: k,
+					ServiceAccount:    r.ServiceAccount,
 				}
 				err = r.createDiscoveryJob(ctx, conf)
 				if err != nil {
@@ -92,13 +93,15 @@ func (r *BgpPeerDiscoveryReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			}
 		}
 	}
-	return ctrl.Result{}, nil
+	return ctrl.Result{
+		RequeueAfter: r.RequeueInterval,
+	}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *BgpPeerDiscoveryReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		Named("peer discovery controller").
+		Named("bgp peer discovery controller").
 		For(&topologyv1alpha1.LabelDiscovery{}).
 		Complete(r)
 }
