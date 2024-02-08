@@ -33,6 +33,7 @@ type Config struct {
 	StartingIP        net.IP
 	JobImageName      string
 	JobImageTag       string
+	ServiceAccount    string
 	BgpNeighborCount  int
 	BgpRemoteAs       int
 }

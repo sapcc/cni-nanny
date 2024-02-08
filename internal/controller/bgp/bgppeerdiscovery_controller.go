@@ -42,12 +42,14 @@ type BgpPeerDiscoveryReconciler struct {
 	Namespace       string
 	JobImageName    string
 	JobImageTag     string
+	ServiceAccount  string
 	RequeueInterval time.Duration
 }
 
 //+kubebuilder:rbac:groups=bgp.cninanny.sap.cc,resources=bgppeerdiscoveries,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=bgp.cninanny.sap.cc,resources=bgppeerdiscoveries/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=bgp.cninanny.sap.cc,resources=bgppeerdiscoveries/finalizers,verbs=update
+//+kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -143,6 +145,7 @@ func (r BgpPeerDiscoveryReconciler) createDiscoveryJob(ctx context.Context, conf
 	job.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicyNever
 	job.Spec.Template.Spec.NodeSelector = sel
 	job.Spec.Template.Spec.HostNetwork = true
+	job.Spec.Template.Spec.ServiceAccountName = conf.ServiceAccount
 	job.Spec.Template.Spec.Tolerations = []corev1.Toleration{
 		{
 			Operator: corev1.TolerationOpExists,

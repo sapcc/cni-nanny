@@ -71,6 +71,7 @@ func main() {
 	flag.StringVar(&config.Cfg.NodeTopologyLabel, "node-topology-label", "topology.kubernetes.io/zone", "The node topology label to handle peer discovery.")
 	flag.StringVar(&config.Cfg.JobImageName, "job-image-name", "cni-nanny-discovery", "The name of bgp peer discovery image.")
 	flag.StringVar(&config.Cfg.JobImageTag, "job-image-tag", "latest", "The tag of bgp peer discovery image.")
+	flag.StringVar(&config.Cfg.ServiceAccount, "service-account-name", "cni-nanny-controller-manager", "The name of service account for bgp peer discovery.")
 	flag.IntVar(&config.Cfg.BgpRemoteAs, "bgp-remote-as", 12345, "The remote autonomous system of bgp peers.")
 	flag.IntVar(&requeueInterval, "requeue-interval", 5, "requeue interval in minutes")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
@@ -108,12 +109,13 @@ func main() {
 	}
 
 	if err = (&bgpcontroller.BgpPeerDiscoveryReconciler{
-		Client:       mgr.GetClient(),
-		Scheme:       mgr.GetScheme(),
-		DefaultName:  config.Cfg.DefaultName,
-		Namespace:    config.Cfg.Namespace,
-		JobImageName: config.Cfg.JobImageName,
-		JobImageTag:  config.Cfg.JobImageTag,
+		Client:         mgr.GetClient(),
+		Scheme:         mgr.GetScheme(),
+		DefaultName:    config.Cfg.DefaultName,
+		Namespace:      config.Cfg.Namespace,
+		JobImageName:   config.Cfg.JobImageName,
+		JobImageTag:    config.Cfg.JobImageTag,
+		ServiceAccount: config.Cfg.ServiceAccount,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "BgpPeerDiscovery")
 		os.Exit(1)
