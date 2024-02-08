@@ -53,7 +53,7 @@ func main() {
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.IntVar(&requeueInterval, "requeue-interval", 5, "requeue interval in minutes")
 	flag.StringVar(&config.Cfg.DefaultName, "default-name", "default", "The default resource name.")
-	flag.StringVar(&config.Cfg.Namespace, "namespace", "kube-system", "The namespace to operate in.")
+	flag.StringVar(&config.Cfg.Namespace, "namespace", "cni-nanny", "The namespace to operate in.")
 	flag.StringVar(&config.Cfg.NodeTopologyLabel, "node-topology-label", "", "The node topology label to handle peer discovery.")
 	flag.StringVar(&config.Cfg.NodeTopologyValue, "node-topology-value", "", "The node topology value to handle peer discovery.")
 	flag.IntVar(&config.Cfg.TraceCount, "traceroute-count", 10, "The count of traceroute packets to send.")

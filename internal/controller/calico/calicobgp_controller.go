@@ -51,6 +51,7 @@ type CalicoBgpReconciler struct {
 //+kubebuilder:rbac:groups=topology.cninanny.sap.cc,resources=labeldiscoveries,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=topology.cninanny.sap.cc,resources=labeldiscoveries/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=topology.cninanny.sap.cc,resources=labeldiscoveries/finalizers,verbs=update
+//+kubebuilder:rbac:groups=projectcalico.org,resources=bgppeers,verbs=get;list;watch;create;update;patch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.

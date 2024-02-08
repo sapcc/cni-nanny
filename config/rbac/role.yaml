@@ -51,6 +51,17 @@ rules:
   - patch
   - update
 - apiGroups:
+  - projectcalico.org
+  resources:
+  - bgppeers
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - topology.cninanny.sap.cc
   resources:
   - labeldiscoveries
