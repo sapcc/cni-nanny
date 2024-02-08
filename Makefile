@@ -1,6 +1,6 @@
 
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+IMG ?= cni-nanny:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.28.0
 
@@ -179,8 +179,22 @@ envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
 	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
-IMAGEDISC	:= cni-nanny-discovery
+IMAGEDISC	:= cni-nanny-discovery:latest
 
 .PHONY: discovery-docker-buildx
 discovery-docker-buildx:
-	docker buildx build --push --provenance=false --platform=$(PLATFORMS) --tag ${IMAGEDISC}:latest -f Dockerfile.discovery .
+	docker buildx build --push --provenance=false --platform=$(PLATFORMS) --tag ${IMAGEDISC} -f Dockerfile.discovery .
+
+.PHONY: helm
+helm: check-env manifests kustomize ## build helm-chart from kustomize
+	rm -f tmp/*
+	$(KUSTOMIZE) build config/default -o tmp/ ; \
+	find tmp/ -type f -exec sed -i '' "s/app.kubernetes.io\\/managed-by: kustomize/app.kubernetes.io\\/managed-by: Helm/g" {} \;
+	mv tmp/*v1_customresourcedefinition* $(CHARTSDIR)/crds/
+	mv tmp/* $(CHARTSDIR)/templates/
+
+.PHONY: check-env
+check-env:
+ifndef CHARTSDIR
+	$(error CHARTSDIR is undefined)
+endif

@@ -20,10 +20,11 @@ import (
 	"flag"
 	"os"
 
+	"github.com/sapcc/cni-nanny/internal/controller/calico"
+
 	v3 "github.com/projectcalico/api/pkg/apis/projectcalico/v3"
 	"github.com/sapcc/cni-nanny/internal/config"
 	bgpcontroller "github.com/sapcc/cni-nanny/internal/controller/bgp"
-	"github.com/sapcc/cni-nanny/internal/controller/calico"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -65,11 +66,11 @@ func main() {
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.StringVar(&config.Cfg.DefaultName, "default-name", "default", "The default resource name.")
-	flag.StringVar(&config.Cfg.Namespace, "namespace", "kube-system", "The namespace to operate in.")
+	flag.StringVar(&config.Cfg.Namespace, "namespace", "cni-nanny", "The namespace to operate in.")
 	flag.StringVar(&config.Cfg.NodeTopologyLabel, "node-topology-label", "topology.kubernetes.io/zone", "The node topology label to handle peer discovery.")
 	flag.StringVar(&config.Cfg.JobImageName, "job-image-name", "cni-nanny-discovery", "The name of bgp peer discovery image.")
 	flag.StringVar(&config.Cfg.JobImageTag, "job-image-tag", "latest", "The tag of bgp peer discovery image.")
-	flag.IntVar(&config.Cfg.BgpRemoteAs, "bgp-remote-as", 65154, "The remote autonomous system of bgp peers.")
+	flag.IntVar(&config.Cfg.BgpRemoteAs, "bgp-remote-as", 12345, "The remote autonomous system of bgp peers.")
 	flag.IntVar(&requeueInterval, "requeue-interval", 5, "requeue interval in minutes")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
