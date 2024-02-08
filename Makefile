@@ -203,7 +203,10 @@ endif
 
 ## For https://github.com/sapcc/go-makefile-maker
 
-.PHONY: FORCE
+# which packages to test with "go test"
+GO_TESTPKGS := $(shell go list -f '{{if or .TestGoFiles .XTestGoFiles}}{{.ImportPath}}{{end}}' ./...)
+# which packages to measure coverage for
+GO_COVERPKGS := $(shell go list ./...)
 
 .PHONY: license-headers
 license-headers: FORCE
@@ -219,10 +222,21 @@ prepare-static-check: FORCE
 	@if ! hash go-licence-detector 2>/dev/null; then printf "\e[1;36m>> Installing go-licence-detector...\e[0m\n"; go install go.elastic.co/go-licence-detector@latest; fi
 	@if ! hash addlicense 2>/dev/null; then  printf "\e[1;36m>> Installing addlicense...\e[0m\n";  go install github.com/google/addlicense@latest; fi
 
-build/cover.out: FORCE | build
+bin/cover.out: FORCE | build
 	@printf "\e[1;36m>> go test\e[0m\n"
-	@env $(GO_TESTENV) go test ./.. $(GO_BUILDFLAGS) -ldflags '-s -w -X github.com/sapcc/go-api-declarations/bininfo.binName=keppel -X github.com/sapcc/go-api-declarations/bininfo.version=$(BININFO_VERSION) -X github.com/sapcc/go-api-declarations/bininfo.commit=$(BININFO_COMMIT_HASH) -X github.com/sapcc/go-api-declarations/bininfo.buildDate=$(BININFO_BUILD_DATE) $(GO_LDFLAGS)' -shuffle=on -p 1 -coverprofile=$@ -covermode=count -coverpkg=$(subst $(space),$(comma),$(GO_COVERPKGS)) $(GO_TESTPKGS)
+	@env $(GO_TESTENV) go test $(GO_BUILDFLAGS) -ldflags '-s -w $(GO_LDFLAGS)' -shuffle=on -p 1 -coverprofile=$@ -covermode=count -coverpkg=$(subst $(space),$(comma),$(GO_COVERPKGS)) $(GO_TESTPKGS)
 
-build/cover.html: build/cover.out
-	@printf "\e[1;36m>> go tool cover > build/cover.html\e[0m\n"
+bin/cover.html: bin/cover.out
+	@printf "\e[1;36m>> go tool cover > bin/cover.html\e[0m\n"
 	@go tool cover -html $< -o $@
+
+vars: FORCE
+	@printf "DESTDIR=$(DESTDIR)\n"
+	@printf "GO_BUILDFLAGS=$(GO_BUILDFLAGS)\n"
+	@printf "GO_COVERPKGS=$(GO_COVERPKGS)\n"
+	@printf "GO_LDFLAGS=$(GO_LDFLAGS)\n"
+	@printf "GO_TESTENV=$(GO_TESTENV)\n"
+	@printf "GO_TESTPKGS=$(GO_TESTPKGS)\n"
+	@printf "PREFIX=$(PREFIX)\n"
+
+.PHONY: FORCE
