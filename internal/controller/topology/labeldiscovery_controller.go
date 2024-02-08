@@ -89,6 +89,7 @@ func (r *LabelDiscoveryReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 
 	if !containsKey(labelDiscovery.Status.DiscoveredTopologyValues, labelName) {
 		patch := client.MergeFrom(labelDiscovery.DeepCopy())
+		log.FromContext(ctx).Info("appending label value", labelDiscovery.Name, labelName)
 		err := r.appendStatus(ctx, labelName, &val, patch, labelDiscovery)
 		if err != nil {
 			log.FromContext(ctx).Error(err, "error updating labelDiscovery status")

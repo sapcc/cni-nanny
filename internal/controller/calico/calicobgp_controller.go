@@ -87,7 +87,7 @@ func (r *CalicoBgpReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			if err != nil {
 				if errors.IsNotFound(err) {
 					calicoPeer := generateCalicoBgpPeer(nsName, spec, &calicoBgpPeer)
-
+					log.FromContext(ctx).Info("creating calico peer", calicoPeer.Name, calicoPeer.Spec.PeerIP)
 					err = r.Create(ctx, calicoPeer)
 					if err != nil {
 						log.FromContext(ctx).Error(err, "error creating calicoBgpPeer")

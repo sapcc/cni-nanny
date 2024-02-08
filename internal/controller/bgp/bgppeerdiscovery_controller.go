@@ -68,15 +68,19 @@ func (r *BgpPeerDiscoveryReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		log.FromContext(ctx).Error(err, "could not get client from manager")
 		return reconcile.Result{}, err
 	}
+	log.FromContext(ctx).Info("found labeldiscovery", labelDiscovery.Name, labelDiscovery.Namespace)
 	for k, v := range labelDiscovery.Status.DiscoveredTopologyValues {
 		if !v.Finalized {
+			log.FromContext(ctx).Info("found non finalized", "topology value", k)
 			// check if discovery is already running
 			found, err := r.checkJobsForTopologyValue(ctx, k)
 			if err != nil {
 				log.FromContext(ctx).Error(err, "error checking discovery jobs")
 				return ctrl.Result{}, err
 			}
+			log.FromContext(ctx).Info(k, "existing job found:", found)
 			if !found {
+				log.FromContext(ctx).Info("starting discovery job", "topology value", k)
 				conf := config.Config{
 					Namespace:         req.Namespace,
 					JobImageName:      r.JobImageName,
