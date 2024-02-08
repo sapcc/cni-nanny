@@ -67,7 +67,6 @@ func (r *CalicoBgpReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	var bgpPeerDiscovery = new(bgpv1alpha1.BgpPeerDiscovery)
 	var nsName types.NamespacedName
-	var calicoBgpPeer v3.BGPPeer
 
 	err := r.Get(ctx, req.NamespacedName, bgpPeerDiscovery)
 	if err != nil {
@@ -76,6 +75,7 @@ func (r *CalicoBgpReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	}
 	if len(bgpPeerDiscovery.Status.DiscoveredPeers) > 0 {
 		for _, v := range bgpPeerDiscovery.Status.DiscoveredPeers {
+			var calicoBgpPeer v3.BGPPeer
 			nsName.Name = "bgp-peer-" + req.Name + "-" + v
 			nsName.Namespace = config.Cfg.Namespace
 			spec := v3.BGPPeerSpec{
