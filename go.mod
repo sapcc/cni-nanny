@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/onsi/ginkgo/v2 v2.11.0
 	github.com/onsi/gomega v1.27.10
-	github.com/projectcalico/api v0.0.0-20231218190037-9183ab93f33e
+	github.com/projectcalico/api/v3 v3.22.0-0.dev
 	github.com/sapcc/go-traceroute v0.0.0-20210130143923-d034613e85fc
 	k8s.io/api v0.28.3
 	k8s.io/apimachinery v0.28.3
