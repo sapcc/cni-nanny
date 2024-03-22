@@ -17,6 +17,7 @@ package main
 import (
 	"flag"
 	"os"
+	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -45,11 +46,11 @@ func init() {
 }
 
 func main() {
-	//var metricsAddr string
-	//var probeAddr string
+	var metricsAddr string
+	var probeAddr string
 	var requeueInterval int
-	//flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
-	//flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	flag.StringVar(&metricsAddr, "metrics-bind-address", "0", "The address the metric endpoint binds to.")
+	flag.StringVar(&probeAddr, "health-probe-bind-address", "0", "The address the probe endpoint binds to.")
 	flag.IntVar(&requeueInterval, "requeue-interval", 5, "requeue interval in minutes")
 	flag.StringVar(&config.Cfg.DefaultName, "default-name", "default", "The default resource name.")
 	flag.StringVar(&config.Cfg.Namespace, "namespace", "cni-nanny", "The namespace to operate in.")
@@ -68,10 +69,10 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme: scheme,
-		//Metrics:                server.Options{BindAddress: metricsAddr},
-		//HealthProbeBindAddress: probeAddr,
-		LeaderElection: false,
+		Scheme:                 scheme,
+		Metrics:                server.Options{BindAddress: metricsAddr},
+		HealthProbeBindAddress: probeAddr,
+		LeaderElection:         false,
 	})
 	if err != nil {
 		discLog.Error(err, "unable to start manager")

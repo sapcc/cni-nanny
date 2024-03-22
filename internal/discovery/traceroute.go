@@ -38,7 +38,7 @@ func GetNeighbors(count int) ([]*net.IP, error) {
 
 	h := make(map[string]struct{})
 	for i := 0; i < count; i++ {
-		dst := fmt.Sprintf("1.1.1.%v", i)
+		dst := fmt.Sprintf("8.8.8.%v", i)
 		err := t.Trace(context.Background(), net.ParseIP(dst), func(reply *traceroute.Reply) {
 			h[reply.IP.String()] = struct{}{}
 		})
