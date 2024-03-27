@@ -17,6 +17,7 @@ package main
 import (
 	"flag"
 	"os"
+
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	"k8s.io/apimachinery/pkg/runtime"
