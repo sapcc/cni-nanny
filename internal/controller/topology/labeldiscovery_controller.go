@@ -79,7 +79,12 @@ func (r *LabelDiscoveryReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	node := &corev1.Node{}
 	err = r.Get(ctx, req.NamespacedName, node)
 	if err != nil {
-		log.FromContext(ctx).Error(err, "could not get client from manager")
+		if errors.IsNotFound(err) {
+			log.FromContext(ctx).Info("node not found, skip", "node", req.NamespacedName)
+			// Node could have been deleted
+			return reconcile.Result{}, nil
+		}
+		log.FromContext(ctx).Error(err, "error getting node", "node", req.NamespacedName)
 		return reconcile.Result{}, err
 	}
 	var val topologyv1alpha1.DiscoveredTopologyValue
