@@ -3,9 +3,6 @@
 metadata:
   url: https://github.com/sapcc/cni-nanny
 
-makefile:
-  enabled: false
-
 dockerfile:
   enabled: false
 
