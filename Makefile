@@ -226,11 +226,11 @@ check-license-headers: FORCE prepare-static-check
 	@printf "\e[1;36m>> addlicense --check\e[0m\n"
 	@addlicense --check  -- $(patsubst $(shell awk '$$1 == "module" {print $$2}' go.mod)%,.%/*.go,$(shell go list ./...))
 
-bin/cover.out: FORCE | build
+build/cover.out: FORCE | build
 	@printf "\e[1;36m>> go test\e[0m\n"
 	@env $(GO_TESTENV) go test $(GO_BUILDFLAGS) -ldflags '-s -w $(GO_LDFLAGS)' -shuffle=on -p 1 -coverprofile=$@ -covermode=count -coverpkg=$(subst $(space),$(comma),$(GO_COVERPKGS)) $(GO_TESTPKGS)
 
-bin/cover.html: bin/cover.out
+build/cover.html: bin/cover.out
 	@printf "\e[1;36m>> go tool cover > bin/cover.html\e[0m\n"
 	@go tool cover -html $< -o $@
 
