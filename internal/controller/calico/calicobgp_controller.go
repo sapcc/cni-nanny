@@ -78,12 +78,17 @@ func (r *CalicoBgpReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			var calicoBgpPeer v3.BGPPeer
 			nsName.Name = "bgp-peer-" + req.Name + "-" + v
 			nsName.Namespace = config.Cfg.Namespace
+			asNumber, err := intToUint32(config.Cfg.BgpRemoteAs)
+			if err != nil {
+				log.FromContext(ctx).Error(err, "error converting BgpRemoteAs to uint32")
+				return ctrl.Result{}, err
+			}
 			spec := v3.BGPPeerSpec{
 				PeerIP:       v,
-				ASNumber:     numorstring.ASNumber(config.Cfg.BgpRemoteAs),
+				ASNumber:     numorstring.ASNumber(asNumber),
 				NodeSelector: config.Cfg.NodeTopologyLabel + " == " + fmt.Sprintf("%q", req.Name),
 			}
-			err := r.Get(ctx, nsName, &calicoBgpPeer)
+			err = r.Get(ctx, nsName, &calicoBgpPeer)
 			if err != nil {
 				if errors.IsNotFound(err) {
 					calicoPeer := generateCalicoBgpPeer(nsName, spec, &calicoBgpPeer)
@@ -138,6 +143,13 @@ func (r *CalicoBgpReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Named("calico bgp controller").
 		For(&bgpv1alpha1.BgpPeerDiscovery{}).
 		Complete(r)
+}
+
+func intToUint32(value int) (uint32, error) {
+	if value < 0 || value > int(^uint32(0)) {
+		return 0, fmt.Errorf("integer overflow: value out of range for uint32")
+	}
+	return uint32(value), nil
 }
 
 func generateCalicoBgpPeer(nsName types.NamespacedName, spec v3.BGPPeerSpec, calicoBgpPeer *v3.BGPPeer) *v3.BGPPeer {
