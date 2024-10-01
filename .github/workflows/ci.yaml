@@ -15,11 +15,12 @@ name: CI
       - '*'
     paths-ignore:
       - '**.md'
+  workflow_dispatch: {}
 permissions:
   contents: read
 jobs:
-  buildAndLint:
-    name: Build & Lint
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -28,15 +29,11 @@ jobs:
         uses: actions/setup-go@v5
         with:
           check-latest: true
-          go-version: 1.22.2
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
+          go-version: 1.23.1
   test:
     name: Test
     needs:
-      - buildAndLint
+      - build
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -45,7 +42,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           check-latest: true
-          go-version: 1.22.2
+          go-version: 1.23.1
       - name: Run tests and generate coverage report
         run: make build/cover.out
       - name: Upload coverage report to Coveralls

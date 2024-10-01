@@ -26,8 +26,6 @@ issues:
   max-same-issues: 0
 
 linters-settings:
-  copyloopvar:
-    ignore-alias: true
   dupl:
     # Tokens count to trigger issue, 150 by default.
     threshold: 100
@@ -37,6 +35,7 @@ linters-settings:
     # Report about not checking of errors in type assertions.
     check-type-assertions: true
   forbidigo:
+    analyze-types: true # required for pkg:
     forbid:
       # ioutil package has been deprecated: https://github.com/golang/go/issues/42026
       - ^ioutil\..*$
@@ -44,6 +43,14 @@ linters-settings:
       # Applications wishing to use http.ServeMux should obtain local instances through http.NewServeMux() instead of using the global default instance.
       - ^http\.DefaultServeMux$
       - ^http\.Handle(?:Func)?$
+      # Forbid usage of old and archived square/go-jose
+      - pkg: ^gopkg\.in/square/go-jose\.v2$
+        msg: "gopk.in/square/go-jose is archived and has CVEs. Replace it with gopkg.in/go-jose/go-jose.v2"
+      - pkg: ^github.com/coreos/go-oidc$
+        msg: "github.com/coreos/go-oidc depends on gopkg.in/square/go-jose which has CVEs. Replace it with github.com/coreos/go-oidc/v3"
+
+      - pkg: ^github.com/howeyc/gopass$
+        msg: "github.com/howeyc/gopass is archived, use golang.org/x/term instead"
   goconst:
     ignore-tests: true
     min-occurrences: 5
@@ -97,12 +104,10 @@ linters-settings:
     default-rpc-path: true
     http-method: true
     http-status-code: true
-    os-dev-null: true
     sql-isolation-level: true
-    syslog-priority: true
-    time-weekday: true
-    time-month: true
     time-layout: true
+    time-month: true
+    time-weekday: true
     tls-signature-scheme: true
   whitespace:
     # Enforce newlines (or comments) after multi-line function signatures.
