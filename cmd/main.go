@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/sapcc/cni-nanny/internal/controller/calico"
@@ -65,6 +66,7 @@ func main() {
 	var enableLeaderElection bool
 	var probeAddr string
 	var requeueInterval int
+	var bgpFilters string
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.StringVar(&config.Cfg.DefaultName, "default-name", "default", "The default resource name.")
@@ -74,6 +76,7 @@ func main() {
 	flag.StringVar(&config.Cfg.JobImageTag, "job-image-tag", "latest", "The tag of bgp peer discovery image.")
 	flag.StringVar(&config.Cfg.ServiceAccount, "service-account-name", "cni-nanny-controller-manager", "The name of service account for bgp peer discovery.")
 	flag.IntVar(&config.Cfg.BgpRemoteAs, "bgp-remote-as", 12345, "The remote autonomous system of bgp peers.")
+	flag.StringVar(&bgpFilters, "bgp-filters", "", "The BGP filters to apply to peers.")
 	flag.IntVar(&requeueInterval, "requeue-interval", 10, "requeue interval in minutes")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
@@ -85,6 +88,11 @@ func main() {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+
+	config.Cfg.BgpFilters = []string{}
+	if bgpFilters != "" {
+		config.Cfg.BgpFilters = strings.Split(bgpFilters, ",")
+	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,

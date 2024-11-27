@@ -36,4 +36,5 @@ type Config struct {
 	ServiceAccount    string
 	BgpNeighborCount  int
 	BgpRemoteAs       int
+	BgpFilters        []string
 }
