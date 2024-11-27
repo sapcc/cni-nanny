@@ -90,13 +90,16 @@ func (r *CalicoBgpReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 				ASNumber:     numorstring.ASNumber(asNumber),
 				NodeSelector: config.Cfg.NodeTopologyLabel + " == " + fmt.Sprintf("%q", req.Name),
 			}
+			if len(config.Cfg.BgpFilters) > 0 {
+				spec.Filters = config.Cfg.BgpFilters
+			}
 			err = r.Get(ctx, nsName, &calicoBgpPeer)
 			if err != nil {
 				if k8serrors.IsNotFound(err) {
 					calicoPeer := generateCalicoBgpPeer(nsName, spec, &calicoBgpPeer)
 					log.FromContext(ctx).Info("creating calico peer", calicoPeer.Name, calicoPeer.Spec.PeerIP)
 					err = r.Create(ctx, calicoPeer)
-					if err != nil {
+					if err != nil && !k8serrors.IsAlreadyExists(err) {
 						log.FromContext(ctx).Error(err, "error creating calicoBgpPeer")
 						return ctrl.Result{}, err
 					}
@@ -106,12 +109,6 @@ func (r *CalicoBgpReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 				}
 			}
 		}
-		/*
-			err = controllerutil.SetOwnerReference(bgpPeerDiscovery, &calicoBgpPeer, r.Scheme)
-			if err != nil {
-				log.FromContext(ctx).Error(err, "error setting owner reference")
-			}
-		*/
 
 		labelDiscovery := &topologyv1alpha1.LabelDiscovery{}
 		nsName.Name = config.Cfg.DefaultName
