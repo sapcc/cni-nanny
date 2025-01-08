@@ -23,6 +23,13 @@ githubWorkflow:
     enabled: true
   securityChecks:
     enabled: true
+  pushContainerToGhcr:
+    enabled: true
+    platforms: "linux/amd64"
+    tagStrategy:
+      - edge
+      - latest
+      - semver
 
 renovate:
   enabled: true
