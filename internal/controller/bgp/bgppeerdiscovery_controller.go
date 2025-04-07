@@ -138,7 +138,7 @@ func (r BgpPeerDiscoveryReconciler) createDiscoveryJob(ctx context.Context, conf
 	lab[topologyv1alpha1.TopologyValue] = conf.NodeTopologyValue
 	job.Name = "bgp-peer-discovery" + "-" + conf.NodeTopologyValue
 	job.Namespace = conf.Namespace
-	job.ObjectMeta.Labels = lab
+	job.Labels = lab
 
 	timeToLive := int32(60)
 	sel := make(map[string]string)

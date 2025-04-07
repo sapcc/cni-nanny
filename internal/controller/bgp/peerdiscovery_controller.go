@@ -108,9 +108,9 @@ func (r *TracerouteDiscoveryReconciler) SetupWithManager(mgr ctrl.Manager) error
 func generateBgpPeerDiscovery(nsName types.NamespacedName, bgpPeerDiscovery *bgpv1alpha1.BgpPeerDiscovery) bgpv1alpha1.BgpPeerDiscovery {
 	bgpPeerDiscovery.Name = nsName.Name
 	bgpPeerDiscovery.Namespace = nsName.Namespace
-	bgpPeerDiscovery.ObjectMeta.Labels = map[string]string{}
-	bgpPeerDiscovery.ObjectMeta.Labels[config.KubeLabelComponent] = "BgpPeerDiscovery"
-	bgpPeerDiscovery.ObjectMeta.Labels[config.KubeLabelManaged] = config.KubeApp
+	bgpPeerDiscovery.Labels = map[string]string{}
+	bgpPeerDiscovery.Labels[config.KubeLabelComponent] = "BgpPeerDiscovery"
+	bgpPeerDiscovery.Labels[config.KubeLabelManaged] = config.KubeApp
 	return *bgpPeerDiscovery
 }
 
