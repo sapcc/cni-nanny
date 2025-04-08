@@ -119,9 +119,9 @@ func generateLabelDiscovery(nsName types.NamespacedName, label string, labelDisc
 	labelDiscovery.Name = nsName.Name
 	labelDiscovery.Namespace = nsName.Namespace
 	labelDiscovery.Status.DiscoveredTopologyValues = make(map[string]topologyv1alpha1.DiscoveredTopologyValue)
-	labelDiscovery.ObjectMeta.Labels = map[string]string{}
-	labelDiscovery.ObjectMeta.Labels[config.KubeLabelComponent] = "LabelDiscovery"
-	labelDiscovery.ObjectMeta.Labels[config.KubeLabelManaged] = config.KubeApp
+	labelDiscovery.Labels = map[string]string{}
+	labelDiscovery.Labels[config.KubeLabelComponent] = "LabelDiscovery"
+	labelDiscovery.Labels[config.KubeLabelManaged] = config.KubeApp
 	return *labelDiscovery
 }
 

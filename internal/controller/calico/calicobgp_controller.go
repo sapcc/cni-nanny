@@ -155,8 +155,8 @@ func generateCalicoBgpPeer(nsName types.NamespacedName, spec v3.BGPPeerSpec, cal
 	calicoBgpPeer.Name = nsName.Name
 	calicoBgpPeer.Namespace = nsName.Namespace
 	calicoBgpPeer.Spec = spec
-	calicoBgpPeer.ObjectMeta.Labels = map[string]string{}
-	calicoBgpPeer.ObjectMeta.Labels[config.KubeLabelComponent] = "BgpPeer"
-	calicoBgpPeer.ObjectMeta.Labels[config.KubeLabelManaged] = config.KubeApp
+	calicoBgpPeer.Labels = map[string]string{}
+	calicoBgpPeer.Labels[config.KubeLabelComponent] = "BgpPeer"
+	calicoBgpPeer.Labels[config.KubeLabelManaged] = config.KubeApp
 	return calicoBgpPeer
 }
