@@ -81,6 +81,7 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
+	flag.StringVar(&config.Cfg.HostEndpointInterface, "host-endpoint-interface", "", "The interface name for host endpoints.")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -139,6 +140,18 @@ func main() {
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "CalicoBgp")
 		os.Exit(1)
+	}
+
+	if config.Cfg.HostEndpointInterface != "" {
+		if err = (&calico.HostEndpointReconciler{
+			Client:        mgr.GetClient(),
+			Scheme:        mgr.GetScheme(),
+			Log:           ctrl.Log.WithName("controllers").WithName("HostEndpoint"),
+			InterfaceName: config.Cfg.HostEndpointInterface,
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "HostEndpoint")
+			os.Exit(1)
+		}
 	}
 
 	if err = (&topologycontroller.LabelDiscoveryReconciler{

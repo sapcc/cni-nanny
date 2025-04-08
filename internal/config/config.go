@@ -25,16 +25,17 @@ const (
 var Cfg = Config{}
 
 type Config struct {
-	DefaultName       string
-	Namespace         string
-	NodeTopologyLabel string
-	NodeTopologyValue string
-	TraceCount        int
-	StartingIP        net.IP
-	JobImageName      string
-	JobImageTag       string
-	ServiceAccount    string
-	BgpNeighborCount  int
-	BgpRemoteAs       int
-	BgpFilters        []string
+	DefaultName           string
+	Namespace             string
+	NodeTopologyLabel     string
+	NodeTopologyValue     string
+	TraceCount            int
+	StartingIP            net.IP
+	JobImageName          string
+	JobImageTag           string
+	ServiceAccount        string
+	BgpNeighborCount      int
+	BgpRemoteAs           int
+	BgpFilters            []string
+	HostEndpointInterface string
 }
