@@ -67,8 +67,8 @@ func main() {
 	var probeAddr string
 	var requeueInterval int
 	var bgpFilters string
-	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
-	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	flag.StringVar(&metricsAddr, "metrics-bind-address", ":30996", "The address the metric endpoint binds to.")
+	flag.StringVar(&probeAddr, "health-probe-bind-address", ":30997", "The address the probe endpoint binds to.")
 	flag.StringVar(&config.Cfg.DefaultName, "default-name", "default", "The default resource name.")
 	flag.StringVar(&config.Cfg.Namespace, "namespace", "cni-nanny", "The namespace to operate in.")
 	flag.StringVar(&config.Cfg.NodeTopologyLabel, "node-topology-label", "topology.kubernetes.io/zone", "The node topology label to handle peer discovery.")

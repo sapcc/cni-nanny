@@ -54,6 +54,7 @@ rules:
   - projectcalico.org
   resources:
   - bgppeers
+  - hostendpoints
   verbs:
   - create
   - get
