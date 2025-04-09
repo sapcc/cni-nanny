@@ -23,6 +23,8 @@ type HostEndpointReconciler struct {
 	InterfaceName string
 }
 
+//+kubebuilder:rbac:groups=projectcalico.org,resources=hostendpoints,verbs=get;list;watch;create;update;patch
+
 func (r *HostEndpointReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var hostEndpoint v3.HostEndpoint
 	if err := r.Get(ctx, req.NamespacedName, &hostEndpoint); err != nil {
