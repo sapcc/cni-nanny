@@ -26,7 +26,7 @@ In case Calico `BGPPeers` need to be recreated (e.g. `BGPFilters` or AS number c
 › kubectl get bgppeer | awk '{print $1}' | grep -v NAME | awk 'NR % 2 == 0'
 ```
 
-2. Delete Calico `BGPPeer` resources
+2. Delete Calico `BGPPeer` resources.
 ```shell
 › kubectl delete bgppeer bgp-peer-pod123-10.10.11.10
 ```
