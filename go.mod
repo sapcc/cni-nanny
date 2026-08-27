@@ -1,6 +1,6 @@
 module github.com/sapcc/cni-nanny
 
-go 1.26
+go 1.27
 
 require (
 	github.com/go-logr/logr v1.4.2
