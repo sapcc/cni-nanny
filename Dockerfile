@@ -26,7 +26,7 @@ RUN CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH}
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot
+FROM gcr.io/distroless/static:nonroot@sha256:1c2c046bc09ed40fad370b599a0b1ae7987f55b01e247cf27a7c27cd97e5bbc7
 LABEL source_repository="https://github.com/sapcc/cni-nanny"
 
 WORKDIR /
