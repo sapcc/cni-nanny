@@ -5,6 +5,7 @@ package calico
 
 import (
 	"context"
+	"maps"
 
 	"github.com/go-logr/logr"
 	v3 "github.com/projectcalico/api/pkg/apis/projectcalico/v3"
@@ -46,9 +47,7 @@ func (r *HostEndpointReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		if hostEndpoint.Labels == nil {
 			hostEndpoint.Labels = make(map[string]string)
 		}
-		for key, val := range node.Labels {
-			hostEndpoint.Labels[key] = val
-		}
+		maps.Copy(hostEndpoint.Labels, node.Labels)
 		return nil
 	})
 	if err != nil {
