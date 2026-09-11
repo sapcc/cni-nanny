@@ -1,5 +1,9 @@
+# SPDX-FileCopyrightText: 2026 SAP SE or an SAP affiliate company
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Build the manager binary
-FROM golang:1.24 AS builder
+FROM golang:1.27 AS builder
 ARG TARGETOS
 ARG TARGETARCH
 

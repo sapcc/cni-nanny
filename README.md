@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 SAP SE or an SAP affiliate company
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # cni-nanny
 
 [![CI](https://github.com/sapcc/cni-nanny/actions/workflows/ci.yaml/badge.svg)](https://github.com/sapcc/cni-nanny/actions/workflows/ci.yaml)
