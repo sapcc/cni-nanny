@@ -15,13 +15,11 @@ import (
 // GetNeighbors discovers next-hops by sending traceroute packets with ttl=1
 func GetNeighbors(count int) ([]*net.IP, error) {
 	t := &traceroute.Tracer{
-		Config: traceroute.Config{
-			Delay:    50 * time.Millisecond,
-			Timeout:  time.Second,
-			MaxHops:  1,
-			Count:    1,
-			Networks: []string{"ip4:icmp", "ip4:ip"},
-		},
+		Delay:    50 * time.Millisecond,
+		Timeout:  time.Second,
+		MaxHops:  1,
+		Count:    1,
+		Networks: []string{"ip4:icmp", "ip4:ip"},
 	}
 	defer t.Close()
 
